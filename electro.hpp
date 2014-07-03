@@ -75,11 +75,10 @@ namespace noob3d {
       std::vector<vector3d> out;
       for(auto i = ps.begin(); i!=ps.end(); ++i)
 	{
-	  integrate::leapfrog(i->r,i->v, t, dt,
-			      [i,this](vector3d r,vector3d v,scalar _t){
-				//return _lorentz(i->r,i->v,_t,i->qmr);
-				return _relativistic_lorentz(i->r,i->v,_t,i->qmr);
-			      });
+	  integrate::rk4(i->r,i->v, t, dt,
+			 [i,this](vector3d r,vector3d v,scalar _t)
+			 { return _relativistic_lorentz(i->r,i->v,_t,i->qmr);}
+			 );
 	  out.push_back(i->r);
 	  out.push_back(i->v);
 	}
