@@ -4,7 +4,7 @@ HEADERS=$(INCLUDE)/noob3d/prim.hpp $(INCLUDE)/noob3d/vector.hpp $(INCLUDE)/noob3
 Btest: Btest.cpp $(HEADERS)
 	$(CXX) -g -I$(INCLUDE) --std=c++11 Btest.cpp -o Btest
 
-all: electro
+all: Btest
 
 clean:
 	rm Btest
