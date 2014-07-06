@@ -3,14 +3,17 @@
 
 #include "prim.hpp"
 #include <iostream>
+#include <map>
 namespace noob3d
 {
   namespace integrate
   {
-    //as a note, BinaryHomotopy should be
+    // The type BinaryHomotopy should be
     // Value (Value r, Value v ,scalar t)
     //and a Homotopy is just
-    // Value (Value r, scalar t).
+    // Value (Value r, scalar t)
+    //Finally, a Function is just a plane old path:
+    // Value (scalar t)
 
   
     //////////////////////////////////////////////////////////////////////////////////
@@ -138,6 +141,28 @@ namespace noob3d
     }
     
   }//namespace diff
-
+  
+  //A convience wrap around a map for associating pairs of numbers scalars with 
+  //functors so that they can be passed to the routines in numer.hpp
+  //Note that scalar, which usually is a floating point, is the key for the map.
+  template <typename Value>
+  struct relation
+  {
+    std::map<scalar,Value> data;
+    relation(std::vector<std::pair<scalar,Value> > in)
+    {
+      for(auto i : in)
+	data[std::get<0>(i)] = std::get<1>(i);
+    }
+    relation(std::map<scalar,Value> in)
+      : data(in)
+    {}
+    relation(){}
+    Value
+    operator ()(scalar in)
+    {
+      return data[in];
+    }
+  };
 }// namespace noob3d
 #endif /*_NOOB3D_NUMER_HPP_*/
