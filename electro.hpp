@@ -45,16 +45,14 @@ namespace noob3d {
     vector3d
     _relativistic_lorentz(vector3d r, vector3d v, scalar t, scalar qmr)
     {
-      scalar invsqgamma = (1-(v/consts::c).squareLength());
-      matrix3d V(v.x*v.x, v.x*v.y, v.x*v.z,
-		 v.y*v.x, v.y*v.y, v.y*v.z,
-		 v.x*v.z, v.y*v.z, v.z*v.z);
-      V/=invsqgamma;
-      V+= matrix3d(1,0,0,
-		   0,1,0,
-		   0,0,1);
+      using namespace consts;
+      scalar invgamma = squareRoot(1-(v/c).squareLength());
+      matrix3d V(sq(c)-sq(v.y)-sq(v.z), v.x*v.y,               v.x*v.z,
+		 v.y*v.x,               sq(c)-sq(v.x)-sq(v.z), v.y*v.z,
+		 v.x*v.z,               v.y*v.z,               sq(c)-sq(v.x)-sq(v.y));
+      V/=sq(c);
       V = inverse(V);
-      V*=squareRoot(invsqgamma);
+      V*=invgamma*invgamma*invgamma;
       return V*_lorentz(r,v,t,qmr);
     }
   public:

@@ -12,7 +12,8 @@ r,v=d;
 r[:] = [ np.array(i) for i in r];
 v[:] = [ np.array(i) for i in v];
 vm = np.sqrt(v[0]**2+v[1]**2+v[2]**2);
-plt.plot(vm);
+
+plt.scatter(np.arange(len(vm)),vm);
 plt.xlabel("time step");
 plt.ylabel("speed (cm/s)");
 plt.show();
