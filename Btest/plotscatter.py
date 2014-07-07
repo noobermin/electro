@@ -9,9 +9,9 @@ from docopt import docopt;
 opts=docopt(__doc__,help=True);
 with open(opts['<infile>'],'rb') as f:
     d=cPickle.load(f);
-r,v=d;
+t,r,v=d;
 
-r[:] = [ l[::10] for l in r]
+r[:] = [ l[::1000] for l in r]
 fig = plt.figure(1);
 ax = fig.add_subplot(111,projection='3d');
 ax.scatter(r[0],r[1],r[2],marker='o',label='r',c='b');

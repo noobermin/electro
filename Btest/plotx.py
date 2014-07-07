@@ -8,10 +8,10 @@ from docopt import docopt;
 opts=docopt(__doc__,help=True);
 with open(opts['<infile>'],'rb') as f:
     d=cPickle.load(f);
-r,v=d;
+t,r,v=d;
 r[:] = [ np.array(i) for i in r];
 v[:] = [ np.array(i) for i in v];
-vm = np.sqrt(v[0]**2+v[1]**2+v[2]**2);
+vm = np.sqrt(v[0]**2+v[1]**2+v[2]**2)[::1000];
 
 plt.scatter(np.arange(len(vm)),vm);
 plt.xlabel("time step");
