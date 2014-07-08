@@ -14,9 +14,9 @@ The basic concept is that the type `Electro` represents the simulation. Its cons
 * The time step.
 * A bool that declares whether threads will be used or not. Currently, each particle is stepped by its own thread.
 
-The units used are cgs and natural units. To use natural units, define the macros ELECRO_USE_NATURAL before the start including `electro.hpp`.
+The units used are cgs and natural units. To use natural units, define the macro `ELECTRO_USE_NATURAL` before the start including `electro.hpp`.
 
-`Electro` has two public methods of interest, the first is `add`. Use this to add particles into the simulation. The second method is `step`, which advances the simulation in time. This (currently) returns a vector of position and velocity pairs, in queue order to when they were appended by `add`.
+`Electro` has two public methods of interest, the first is `add`. Use this to add particles into the simulation. The second method is `step`, which advances the simulation in time. This returns a vector of first a timestamp, position, and then velocities, from x to z in that order, for each particle in queue order to when they were appended by `add`.
 
 Technical
 ---------
