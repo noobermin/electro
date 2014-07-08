@@ -15,7 +15,6 @@
 #include <functional>
 
 namespace noob3d {
-
   namespace consts
   {
 #ifdef ELECTRO_USE_NATURAL
@@ -70,7 +69,7 @@ namespace noob3d {
     std::vector<particle> ps;
     scalar t;
     scalar dt;
-    unsigned int ids;//,nthreads;
+    unsigned int ids;
     vector3d (*E)(vector3d,scalar);
     vector3d (*B)(vector3d,scalar);
     void (Electro::*actual_step)(std::vector<scalar>&);
@@ -130,11 +129,8 @@ namespace noob3d {
 	    vector3d (*_B)(vector3d,scalar),
 	    scalar idt=0.25,
 	    bool ithreading=false)
-	    //unsigned int inthreads=0)
       : t(0.0), dt(idt), ids(0), E(_E), B(_B),
 	actual_step( ithreading ? &Electro::step_threaded : &Electro::step_linear )
-	//nthreads(inthreads),
-	//actual_step( nthreads==0 ? &Electro::step_threaded : &Electro::step_linear )
     {}
     void
     add(vector3d r, vector3d v, scalar qmr)
