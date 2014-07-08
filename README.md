@@ -8,12 +8,13 @@ Usage / Configuration
 ---------------------
 electro has no configuration save the "main" file.
 
-The basic concept is that the type `Electro` represents the simulation. Its constructor has three arguments:
+The basic concept is that the type `Electro` represents the simulation. Its constructor has four arguments:
 * A function pointer to a function (subroutine) that gives the Electric Field as a function (mathematical) of spacetime
 * A function pointer to a function that gives the Magnetic Field as a function of spacetime
 * The time step.
+* A bool that declares whether threads will be used or not. Currently, each particle is stepped by its own thread.
 
-The units used are cgs, of course ;)
+The units used are cgs and natural units. To use natural units, define the macros ELECRO_USE_NATURAL before the start including `electro.hpp`.
 
 `Electro` has two public methods of interest, the first is `add`. Use this to add particles into the simulation. The second method is `step`, which advances the simulation in time. This (currently) returns a vector of position and velocity pairs, in queue order to when they were appended by `add`.
 
