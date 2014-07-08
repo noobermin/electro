@@ -11,6 +11,8 @@
 #include <exception>
 #include <cstdlib>
 #include <cmath>
+#include <thread>
+#include <functional>
 
 namespace noob3d {
 
@@ -22,79 +24,98 @@ namespace noob3d {
     const scalar c=3e10;
 #endif
   }
-
   struct particle
   {
-    vector3d r,v; int id; scalar qmr;
+    vector3d r,v; scalar qmr; unsigned int id;
   };
+  typedef vector3d (*FieldFunc)(vector3d,scalar);
 
-
-  typedef vector3d vector3d;
   static vector3d zerovector;
+
+  inline vector3d 
+  lorentz(vector3d r, vector3d v, scalar t, scalar qmr,
+	  FieldFunc E, FieldFunc B)
+  {
+    return (E(r,t)+cross(v,B(r,t)/consts::c))*qmr;
+  }
+  inline vector3d
+  relativistic_lorentz(vector3d r, vector3d v, scalar t, scalar qmr,
+		       FieldFunc E, FieldFunc B)
+  {
+    using namespace consts;
+    scalar invgamma = squareRoot(1-(v/c).squareLength());
+#ifdef ELECTRO_USE_NEWSCHEME
+    matrix3d V(sq(c)-sq(v.y)-sq(v.z), v.x*v.y,               v.x*v.z,
+	       v.y*v.x,               sq(c)-sq(v.x)-sq(v.z), v.y*v.z,
+	       v.x*v.z,               v.y*v.z,               sq(c)-sq(v.x)-sq(v.y));
+    V/=sq(c);
+    V=inverse(V);
+    V*=invgamma*invgamma*invgamma;
+#else
+    matrix3d V(sq(v.x), v.x*v.y, v.x*v.z,
+	       v.y*v.x, sq(v.y), v.y*v.z,
+	       v.x*v.z, v.y*v.z, sq(v.z));
+    V/=(sq(c)-v.squareLength());
+    V+=matrix3d(1,0,0,
+		0,1,0,
+		0,0,1);
+    V=inverse(V);
+    V*=invgamma;
+#endif
+    return V*lorentz(r,v,t,qmr,E,B);
+  }
 
   class Electro
   {
     std::vector<particle> ps;
     scalar t;
     scalar dt;
-    int ids;
+    unsigned int ids;//,nthreads;
     vector3d (*E)(vector3d,scalar);
     vector3d (*B)(vector3d,scalar);
-    
-    vector3d 
-    _lorentz(vector3d r, vector3d v, scalar t, scalar qmr)
-    {
-      return (E(r,t)+cross(v,B(r,t)/consts::c))*qmr;
-    }
-    
-    vector3d
-    _relativistic_lorentz(vector3d r, vector3d v, scalar t, scalar qmr)
-    {
-      using namespace consts;
-      scalar invgamma = squareRoot(1-(v/c).squareLength());
-#ifdef ELECTRO_USE_NEWSCHEME
-      matrix3d V(sq(c)-sq(v.y)-sq(v.z), v.x*v.y,               v.x*v.z,
-		 v.y*v.x,               sq(c)-sq(v.x)-sq(v.z), v.y*v.z,
-		 v.x*v.z,               v.y*v.z,               sq(c)-sq(v.x)-sq(v.y));
-      V/=sq(c);
-      V=inverse(V);
-      V*=invgamma*invgamma*invgamma;
-#else
-      matrix3d V(sq(v.x), v.x*v.y, v.x*v.z,
-		 v.y*v.x, sq(v.y), v.y*v.z,
-		 v.x*v.z, v.y*v.z, sq(v.z));
-      V/=(sq(c)-v.squareLength());
-      V+=matrix3d(1,0,0,
-		  0,1,0,
-		  0,0,1);
-      V=inverse(V);
-      V*=invgamma;
-#endif
-      return V*_lorentz(r,v,t,qmr);
-    }
-  public:
-    Electro(vector3d (*_E)(vector3d,scalar),
-	    vector3d (*_B)(vector3d,scalar),
-	    scalar idt=0.25) 
-      : t(0.0), dt(idt), ids(0), E(_E),B(_B)
-    {}
+    void (Electro::*actual_step)(std::vector<scalar>&);
+  protected:
     void
-    add(vector3d r, vector3d v, scalar qmr)
+    step_threaded(std::vector<scalar>& out)
     {
-      ps.push_back({r,v,ids++,qmr});
+      struct output_data
+      {
+	vector3d r,v;
+      };
+      std::vector<output_data> _out(ps.size());
+      std::vector<std::thread> pool;
+      auto f = [this](particle &p, output_data &d)
+	{
+	  integrate::leapfrog(p.r,p.v, t, dt,
+			      [p,this](vector3d r,vector3d v,scalar _t)
+	{return relativistic_lorentz(p.r,p.v,_t,p.qmr,E,B);});
+	  d.r=p.r;
+	  d.v=d.v;
+	};
+      for(int i=0; i!=ps.size(); ++i)
+	pool.push_back(std::thread(f, std::ref(ps[i]), std::ref(_out[i])));
+      for(std::thread &t : pool)
+	if(t.joinable()) t.join();
+      for (output_data d: _out)
+	{
+	  out.push_back(d.r.x);
+	  out.push_back(d.r.y);
+	  out.push_back(d.r.z);
+	  out.push_back(d.v.x);
+	  out.push_back(d.v.y);
+	  out.push_back(d.v.z);
+	}
+      return;
     }
     
-    std::vector<scalar>
-    step()
+    void
+    step_linear(std::vector<scalar>& out)
     {
-      std::vector<scalar> out;
-      out.push_back(t+dt);
       for(auto i = ps.begin(); i!=ps.end(); ++i)
 	{
 	  integrate::leapfrog(i->r,i->v, t, dt,
-			      [i,this](vector3d r,vector3d v,scalar _t){
-				return _relativistic_lorentz(i->r,i->v,_t,i->qmr);
-			      });
+			      [i,this](vector3d r,vector3d v,scalar _t)
+			      {return relativistic_lorentz(i->r,i->v,_t,i->qmr,E,B);});
 	  out.push_back(i->r.x);
 	  out.push_back(i->r.y);
 	  out.push_back(i->r.z);
@@ -102,9 +123,34 @@ namespace noob3d {
 	  out.push_back(i->v.y);
 	  out.push_back(i->v.z);
 	}
+      return;
+    }
+  public:
+    Electro(vector3d (*_E)(vector3d,scalar),
+	    vector3d (*_B)(vector3d,scalar),
+	    scalar idt=0.25,
+	    bool ithreading=false)
+	    //unsigned int inthreads=0)
+      : t(0.0), dt(idt), ids(0), E(_E), B(_B),
+	actual_step( ithreading ? &Electro::step_threaded : &Electro::step_linear )
+	//nthreads(inthreads),
+	//actual_step( nthreads==0 ? &Electro::step_threaded : &Electro::step_linear )
+    {}
+    void
+    add(vector3d r, vector3d v, scalar qmr)
+    {
+      ps.push_back({r,v,qmr,ids++});
+    }
+
+    std::vector<scalar>
+    step()
+    {
+      std::vector<scalar> out;
+      out.push_back(t+dt);
+      (this->*(actual_step))(out);
       t+=dt;
       return out;
-    } 
+    }
   };
 }//namespace noob3d
 
