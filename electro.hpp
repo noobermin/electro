@@ -19,8 +19,10 @@ namespace noob3d {
   {
 #ifdef ELECTRO_USE_NATURAL
     const scalar c=1;
+    const scalar e=0.302822;
 #else
-    const scalar c=3e10;
+    const scalar c=2.999792458e10;
+    const scalar e=4.80320425e-10;
 #endif
   }
   struct particle
@@ -43,24 +45,12 @@ namespace noob3d {
   {
     using namespace consts;
     scalar invgamma = squareRoot(1-(v/c).squareLength());
-#ifdef ELECTRO_USE_NEWSCHEME
     matrix3d V(sq(c)-sq(v.y)-sq(v.z), v.x*v.y,               v.x*v.z,
 	       v.y*v.x,               sq(c)-sq(v.x)-sq(v.z), v.y*v.z,
 	       v.x*v.z,               v.y*v.z,               sq(c)-sq(v.x)-sq(v.y));
     V/=sq(c);
     V=inverse(V);
     V*=invgamma*invgamma*invgamma;
-#else
-    matrix3d V(sq(v.x), v.x*v.y, v.x*v.z,
-	       v.y*v.x, sq(v.y), v.y*v.z,
-	       v.x*v.z, v.y*v.z, sq(v.z));
-    V/=(sq(c)-v.squareLength());
-    V+=matrix3d(1,0,0,
-		0,1,0,
-		0,0,1);
-    V=inverse(V);
-    V*=invgamma;
-#endif
     return V*lorentz(r,v,t,qmr,E,B);
   }
 
