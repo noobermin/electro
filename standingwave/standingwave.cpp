@@ -1,8 +1,4 @@
-#include <boost/program_options.hpp>
-#include <stdexcept>
-using namespace boost;
-namespace po = boost::program_options;
-
+#include "opts.cpp"
 #include "noob3d/prim.hpp"
 #include <vector>
 #include <iostream>
@@ -74,32 +70,9 @@ void range_add(Electro& electro,
 int
 main(int argc, char* argv[])
 {
-  po::options_description d("Options");
-  unsigned int n, N;
-  d.add_options()
-    ("help,h","produce this help")
-    ("number,n",po::value<unsigned int>(&n)->default_value(48),
-     "number of particles to allocate")
-    ("periods,T",po::value<unsigned int>(&N)->default_value(2),
-     "number of periods to iterate over");
-  po::variables_map vm;
-  try 
-    {
-      po::store(po::command_line_parser(argc,argv).options(d).run(),vm);
-      po::notify(vm);
-    }
-  catch (std::exception &e)
-    {
-      std::cout << e.what() << std::endl;
-      return -1;
-    }
-  if (vm.count("help"))
-    {
-      std::cout << "usage: arg [options]" << std::endl << d ;
-      return 0;
-    }
-  N*=steps_per_period;
-  //initializign simulation
+  unsigned int n, N=steps_per_period;
+  process_args(argc,argv,n,N);
+  //initializing simulation
   Electro electro(E,B,timestep,true);
   range_add(electro, 
 	    v3(), v3(2*lambda,2*lambda,2*lambda),
