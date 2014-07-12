@@ -79,7 +79,7 @@ namespace noob3d {
 			      [p,this](vector3d r,vector3d v,scalar _t)
 	{return relativistic_lorentz(p.r,p.v,_t,p.qmr,E,B);});
 	  d.r=p.r;
-	  d.v=d.v;
+	  d.v=p.v;
 	};
       for(int i=0; i!=ps.size(); ++i)
 	pool.push_back(std::thread(f, std::ref(ps[i]), std::ref(_out[i])));
