@@ -1,8 +1,7 @@
 #include "noob3d/prim.hpp"
 #include <vector>
 #include <iostream>
-#define _USE_NATURAL
-#define _USE_NEWSCHEME
+#define ELECTRO_USE_NATURAL
 #include "electro.hpp"
 
 using namespace noob3d;
@@ -12,7 +11,7 @@ typedef scalar sc;
 inline
 v3 E(v3 r, sc t)
 {
-  return v3();//v3(1.0,0.0,0.0)*1.0e9;
+  return v3();
 }
 inline
 v3 B(v3 r, sc t)
