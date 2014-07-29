@@ -29,7 +29,7 @@ namespace noob3d {
   {
     vector3d r,v; scalar qmr; unsigned int id;
   };
-  typedef vector3d (*FieldFunc)(vector3d,scalar);
+  typedef std::function<vector3d(vector3d,scalar)> FieldFunc;
 
   static vector3d zerovector;
 
@@ -60,8 +60,7 @@ namespace noob3d {
     scalar t;
     scalar dt;
     unsigned int ids;
-    vector3d (*E)(vector3d,scalar);
-    vector3d (*B)(vector3d,scalar);
+    FieldFunc E,B;
     void (Electro::*actual_step)(std::vector<scalar>&);
   protected:
     void
@@ -115,8 +114,8 @@ namespace noob3d {
       return;
     }
   public:
-    Electro(vector3d (*_E)(vector3d,scalar),
-	    vector3d (*_B)(vector3d,scalar),
+    Electro(FieldFunc _E,
+	    FieldFunc _B,
 	    scalar idt=0.25,
 	    bool ithreading=false)
       : t(0.0), dt(idt), ids(0), E(_E), B(_B),
