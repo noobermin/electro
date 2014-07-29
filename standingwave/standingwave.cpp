@@ -13,73 +13,31 @@ typedef scalar sc;
 using namespace noob3d::consts;
 const double pi = M_PI;
 const double m_e = 9.10938291e-28;
-const double lambda = 8e-5;
-const double I = 1e18*1e7, E_0=sqrt(4*pi*I/c);
+const double l = 8e-5;
 const double timestep = 1e-19;
-const int steps_per_period = int(lambda/c/timestep);
-
-inline
-scalar time_p(sc t,sc phi=0.0)
-{ return sin(2*pi/lambda*(c*t)+phi);}
-
-inline
-scalar space_p(v3 r,sc phi=0.0)
-{ return sin(2*pi/lambda*(r.z)+phi);}
-
-
-inline
-v3 E(v3 r, sc t)
-{
-  return v3(1.0,0.0,0.0)*E_0*time_p(t,pi/2.0)*space_p(r,pi/2.0);
-}
-
-inline
-v3 B(v3 r, sc t)
-{
-  return v3(0.0,1.0,0.0)*E_0*time_p(t)*space_p(r);
-}
-
-
-void range_add(Electro& electro, 
-	       v3 r_min, v3 r_max,
-	       v3 v_min, v3 v_max,
-	       sc qmr,
-	       unsigned int n)
-{
-  std::random_device g;
-  std::uniform_real_distribution<scalar> 
-    d_rx(r_min.x, r_max.x),
-    d_ry(r_min.y, r_max.y),
-    d_rz(r_min.z, r_max.z),
-
-    d_vr(v_min.x, v_max.x),//really r
-    d_vth(v_min.y, v_max.y),//really theta
-    d_vphi(v_min.z, v_max.z);//phi
-  ++n;
-  while(n--)
-    {
-      v3 r(d_rx(g),d_ry(g),d_rz(g));
-      sc phi = d_vphi(g), th = d_vth(g);
-      v3 v(sin(th)*cos(phi),sin(th)*sin(phi),cos(th));
-      v*=d_vr(g)*c;
-      electro.add(r,v,qmr);
-    }
-  return;
-}
+const int steps_per_period = int(l/c/timestep);
 
 int
 main(int argc, char* argv[])
 {
-  unsigned int n, N=steps_per_period;
-  process_args(argc,argv,n,N);
+  unsigned int N=steps_per_period;
+  double I = 1e7;
+  //reading in arguments
+  process_args(argc,argv,I,N);
+  double E_0 = sqrt(4*pi*I/c);
+  //making fields lambda functions. The 2.0 is due to the standing wave forming
+  //from constructive interference of two plane waves.
+  auto E = [E_0](v3 r, sc t)
+    {
+      return v3(2.0,0.0,0.0)*E_0*cos(2*pi/l*c*t)*cos(2*pi/l*r.z);
+    };
+  auto B = [E_0](v3 r, sc t)
+    {
+      return v3(0.0,2.0,0.0)*E_0*sin(2*pi/l*c*t)*sin(2*pi/l*r.z);
+    };
   //initializing simulation
   Electro electro(E,B,timestep);
-  electro.add(v3(0,0,lambda/8.0),v3(),-e/m_e);
-  //range_add(electro, 
-  //	    v3(), v3(2*lambda,2*lambda,2*lambda),
-  //	    v3(), v3(0.999,pi,2*pi),
-  //	    -e/m_e,
-  //	    n);
+  electro.add(v3(0,0,l/8.0),v3(),-e/m_e);
   for(int i=0;i<N; ++i)
     {
       std::vector<sc> c = electro.step();

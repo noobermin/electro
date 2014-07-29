@@ -14,7 +14,7 @@ typedef struct {
     /* options without arguments */
     int help;
     /* options with arguments */
-    char *number;
+    char *intensity;
     char *periods;
     /* special */
     const char *usage_pattern;
@@ -22,11 +22,13 @@ typedef struct {
 } DocoptArgs;
 
 const char help_message[] =
-"Usage: standingwave [--help --number=<N> --periods=<T>]\n"
+"Run the standingwave simulation.\n"
+"\n"
+"Usage: standingwave [ --help --periods=T  --intensity=I ]\n"
 "";
 
 const char usage_pattern[] =
-"Usage: standingwave [--help --number=<N> --periods=<T>]";
+"Usage: standingwave [ --help --periods=T  --intensity=I ]";
 
 typedef struct {
     const char *name;
@@ -243,9 +245,9 @@ int elems_to_args(Elements *elements, DocoptArgs *args, bool help,
             return 1;
         } else if (!strcmp(option->olong, "--help")) {
             args->help = option->value;
-        } else if (!strcmp(option->olong, "--number")) {
+        } else if (!strcmp(option->olong, "--intensity")) {
             if (option->argument)
-                args->number = option->argument;
+                args->intensity = option->argument;
         } else if (!strcmp(option->olong, "--periods")) {
             if (option->argument)
                 args->periods = option->argument;
@@ -279,7 +281,7 @@ DocoptArgs docopt(int argc, char *argv[], bool help, const char *version) {
     };
     Option options[] = {
         {NULL, "--help", 0, 0, NULL},
-        {NULL, "--number", 1, 0, NULL},
+        {NULL, "--intensity", 1, 0, NULL},
         {NULL, "--periods", 1, 0, NULL}
     };
     Elements elements = {0, 0, 3, commands, arguments, options};
@@ -292,33 +294,32 @@ DocoptArgs docopt(int argc, char *argv[], bool help, const char *version) {
     return args;
 }
 
-//my parser
 
 #include <iostream>
 #include <string>
 #include <stdexcept>
 void
 process_args(int argc, char *argv[],
-	     unsigned int &n, unsigned int &N)
+	     double &I, unsigned int &N)
 {
   DocoptArgs opts = docopt(argc,argv,true,"1.0");
-  if (opts.number)
+  if (opts.intensity)
     {
       try
 	{
-	  n = std::stoi(opts.number);
+	  I = std::stod(opts.intensity);
 	}
       catch (std::invalid_argument &e)
 	{
-	  std::cout << "argument to --number \""
-		    << opts.number
+	  std::cout << "argument to --intensity \""
+		    << opts.intensity
 		    << "\" is not a number." << std::endl;
 	  exit(EXIT_FAILURE);
 	}
     }
   else
     {
-      n = 48;
+      I *= 1e18;
     }
   if (opts.periods)
     {

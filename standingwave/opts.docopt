@@ -1,1 +1,3 @@
-Usage: standingwave [--help --number=<N> --periods=<T>]
+Run the standingwave simulation.
+
+Usage: standingwave [ --help --periods=T  --intensity=I ]
