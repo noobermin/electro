@@ -29,7 +29,7 @@ r,v=d;
 end  = int(opts['-e']) if opts['-e'] else None;
 step = int(opts['-s']) if opts['-s'] else None;
 
-r[:] = [ l[:end:step] for l in r]
+r[:] = [ np.array(l[:end:step]) for l in r]
 fig = plt.figure(1);
 ax = fig.add_subplot(111,projection='3d');
 ax.scatter(r[0],r[1],r[2],marker='o',label='r',c='b');
