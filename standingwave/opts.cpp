@@ -14,6 +14,10 @@ typedef struct {
     /* options without arguments */
     int help;
     /* options with arguments */
+    char *BS;
+    char *BT;
+    char *ES;
+    char *ET;
     char *intensity;
     char *periods;
     /* special */
@@ -24,11 +28,24 @@ typedef struct {
 const char help_message[] =
 "Run the standingwave simulation.\n"
 "\n"
-"Usage: standingwave [ --help --periods=T  --intensity=I ]\n"
+"Usage:\n"
+"  standingwave [--help]\n"
+"  standingwave [--periods=T  --intensity=I --ET=ETphi --BT=BTphi --ES=ESphi --BS=BSphi]\n"
+"\n"
+"Options:\n"
+"  --help            Print this help.\n"
+"  --periods=T       Run for T periods; this is an integer, sorry.\n"
+"  --intensity=I     Use an intensity of I in W/cm^2 instead of 1e18.\n"
+"  --ET=ET           Run with a time phase of ET*pi for the electric field.\n"
+"  --BT=BT           Run with a time phase of BT*pi for the magnetic field.\n"
+"  --ES=ES           Run with a time phase of ES*pi for the electric field.\n"
+"  --BS=BS           Run with a time phase of BS*pi for the magnetic field.\n"
 "";
 
 const char usage_pattern[] =
-"Usage: standingwave [ --help --periods=T  --intensity=I ]";
+"Usage:\n"
+"  standingwave [--help]\n"
+"  standingwave [--periods=T  --intensity=I --ET=ETphi --BT=BTphi --ES=ESphi --BS=BSphi]";
 
 typedef struct {
     const char *name;
@@ -245,6 +262,18 @@ int elems_to_args(Elements *elements, DocoptArgs *args, bool help,
             return 1;
         } else if (!strcmp(option->olong, "--help")) {
             args->help = option->value;
+        } else if (!strcmp(option->olong, "--BS")) {
+            if (option->argument)
+                args->BS = option->argument;
+        } else if (!strcmp(option->olong, "--BT")) {
+            if (option->argument)
+                args->BT = option->argument;
+        } else if (!strcmp(option->olong, "--ES")) {
+            if (option->argument)
+                args->ES = option->argument;
+        } else if (!strcmp(option->olong, "--ET")) {
+            if (option->argument)
+                args->ET = option->argument;
         } else if (!strcmp(option->olong, "--intensity")) {
             if (option->argument)
                 args->intensity = option->argument;
@@ -271,7 +300,7 @@ int elems_to_args(Elements *elements, DocoptArgs *args, bool help,
 
 DocoptArgs docopt(int argc, char *argv[], bool help, const char *version) {
     DocoptArgs args = {
-        0, NULL, NULL,
+        0, NULL, NULL, NULL, NULL, NULL, NULL,
         usage_pattern, help_message
     };
     Tokens ts;
@@ -281,10 +310,14 @@ DocoptArgs docopt(int argc, char *argv[], bool help, const char *version) {
     };
     Option options[] = {
         {NULL, "--help", 0, 0, NULL},
+        {NULL, "--BS", 1, 0, NULL},
+        {NULL, "--BT", 1, 0, NULL},
+        {NULL, "--ES", 1, 0, NULL},
+        {NULL, "--ET", 1, 0, NULL},
         {NULL, "--intensity", 1, 0, NULL},
         {NULL, "--periods", 1, 0, NULL}
     };
-    Elements elements = {0, 0, 3, commands, arguments, options};
+    Elements elements = {0, 0, 7, commands, arguments, options};
 
     ts = tokens_new(argc, argv);
     if (parse_args(&ts, &elements))
@@ -294,49 +327,45 @@ DocoptArgs docopt(int argc, char *argv[], bool help, const char *version) {
     return args;
 }
 
-
-#include <iostream>
 #include <string>
 #include <stdexcept>
-void
-process_args(int argc, char *argv[],
-	     double &I, unsigned int &N)
+#include <iostream>
+double
+convert_arg(const char* in,std::string name, double def)
 {
-  DocoptArgs opts = docopt(argc,argv,true,"1.0");
-  if (opts.intensity)
+  if (in)
     {
       try
 	{
-	  I = std::stod(opts.intensity);
+	  return std::stod(in);
 	}
       catch (std::invalid_argument &e)
 	{
-	  std::cout << "argument to --intensity \""
-		    << opts.intensity
+	  std::cout << "argument to --" << name << "\""
+		    << in
 		    << "\" is not a number." << std::endl;
 	  exit(EXIT_FAILURE);
 	}
     }
-  else
-    {
-      I *= 1e18;
-    }
-  if (opts.periods)
+  return def;
+}
+
+int
+convert_arg(const char* in,std::string name, int def)
+{
+  if (in)
     {
       try
 	{
-	  N *=std::stoi(opts.periods);
+	  return std::stoi(in);
 	}
       catch (std::invalid_argument &e)
 	{
-	  std::cout << "argument to --periods \""
-		    << opts.periods
+	  std::cout << "argument to --" << name << "\""
+		    << in
 		    << "\" is not a number." << std::endl;
 	  exit(EXIT_FAILURE);
 	}
     }
-  else
-    {
-      N *= 2;
-    }
+  return def;
 }
