@@ -45,19 +45,12 @@ main(int argc, char* argv[])
     };
   //initializing simulation
   Electro electro(E,B,timestep);
-  //adding five steps
+  //adding four starting points.
   //electro.add(v3(0,0,0   ),v3(),-e/m_e);
-  electro.add(v3(0,0,l/16),v3(),-e/m_e);
-  //electro.add(v3(0,0,2/16),v3(),-e/m_e);
+  //electro.add(v3(0,0,l/16),v3(),-e/m_e);
+  electro.add(v3(0,0,l*2/16),v3(),-e/m_e);
   //electro.add(v3(0,0,3/16),v3(),-e/m_e);
-  for(int i=0;i<N; ++i)
-    {
-      std::vector<sc> c = electro.step();
-      std::cout << c[0] << ":";
-      for(auto j=c.begin()+1;j!=c.end();j+=3)
-	std::cout<< *j <<","<<*(j+1)<<","<<*(j+2)<<" ";
-      std::cout << std::endl;
-    }
+  run_and_output(electro, N);
   return 0;
 }
 

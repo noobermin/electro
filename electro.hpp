@@ -119,14 +119,15 @@ namespace noob3d {
 	    scalar idt=0.25,
 	    bool ithreading=false)
       : t(0.0), dt(idt), ids(0), E(_E), B(_B),
-	actual_step( ithreading ? &Electro::step_threaded : &Electro::step_linear )
+	actual_step( ithreading ? 
+          &Electro::step_threaded 
+        : &Electro::step_linear )
     {}
     void
     add(vector3d r, vector3d v, scalar qmr)
     {
       ps.push_back({r,v,qmr,ids++});
     }
-
     std::vector<scalar>
     step()
     {
@@ -136,7 +137,25 @@ namespace noob3d {
       t+=dt;
       return out;
     }
-  };
+  };//class Electro
+  
+  inline
+  void run_and_output(Electro& electro, int N)
+  {
+    //why is this not a member function? Because I do not mean to not
+    //have Electro be inherited. Output code will change as my needs change
+    //and I prefer to deal with that by writing a new function, not inheritance.
+    //Why? Because I'm a generic man, not a OOP man. FFS, if anyone will ever 
+    //care about this childish sim they should add it themselves.
+    for(int i=0;i<N; ++i)
+    {
+      std::vector<scalar> c = electro.step();
+      std::cout << c[0] << ":";
+      for(auto j=c.begin()+1;j!=c.end();j+=3)
+	std::cout<< *j <<","<<*(j+1)<<","<<*(j+2)<<" ";
+      std::cout << std::endl;
+    }
+  }
 }//namespace noob3d
 
 #endif //_ELECTRO_HPP_
