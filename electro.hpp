@@ -21,7 +21,7 @@ namespace noob3d {
     const scalar c=1;
     const scalar e=0.302822;
 #else
-    const scalar c=2.999792458e10;
+    const scalar c=2.99792458e10;
     const scalar e=4.80320425e-10;
 #endif
   }

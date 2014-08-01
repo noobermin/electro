@@ -13,19 +13,19 @@ typedef scalar sc;
 using namespace noob3d::consts;
 const double pi = M_PI;
 const double m_e = 9.10938291e-28;
+//const double T =
 const double l = 8e-5;
-const double timestep = 1e-19;
-const int steps_per_period = int(l/c/timestep);
 
 int
 main(int argc, char* argv[])
 {
+  const double timestep = 1e-21;
   unsigned int N;
   double I,Et,Bt,Es,Bs;
   //reading in arguments
   DocoptArgs opts = docopt(argc,argv,true,"1.0");
   I = convert_arg(opts.intensity,"intensity",1e18)*1e7;
-  N = convert_arg(opts.periods,"periods",2)*steps_per_period;
+  N = convert_arg(opts.periods,"periods",1)*int(l/c/timestep);
   Et= convert_arg(opts.ET,"ET",1.0/2.0);
   Es= convert_arg(opts.ET,"ES",1.0/2.0);
   Bt= convert_arg(opts.BT,"BT",0.0);

@@ -33,7 +33,7 @@ output = opts['-o'];
 
 #IMPORTANT: we use microns and seconds here.
 lm = 8e-1;
-c = 2.999792458e14;
+c = 2.99792458e14;
 Et = float(opts['--ET']) if opts['--ET'] else 1/2;
 Es = float(opts['--ES']) if opts['--ES'] else 1/2;
 Bt = float(opts['--BT']) if opts['--BT'] else 0.0;
