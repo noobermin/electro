@@ -27,7 +27,7 @@ lm   = float(opts['--lambda']) if opts['--lambda'] else 8e-5;
 I    = float(opts['--intensity']) if opts['--intensity'] else 1e18;
 stop = float(opts['--stop']) if opts['--stop'] else lm/4;
 #IMPORTANT: we use cgs here.
-c   = 2.999792458e10;
+c   = 2.99792458e10;
 m_e = 9.10938291e-28;
 #reading in file or from stdin.
 if opts['<infile>']:

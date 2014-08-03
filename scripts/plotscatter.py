@@ -7,8 +7,8 @@ Usage:
   ./plotscatter.py [options]
 
 Options:
-  -s STEP           step by STEP amount
-  -e END            end at END
+  -s STEP           Step by STEP amount
+  -e END            End at END
 
 '''
 import matplotlib.pyplot as plt;
@@ -29,8 +29,8 @@ r,v=d;
 end  = int(opts['-e']) if opts['-e'] else None;
 step = int(opts['-s']) if opts['-s'] else None;
 
-r[:] = [ np.array(l[:end:step]) for l in r]
+x,y,z = r[:] = [ np.array(l[:end:step]) for l in r]
 fig = plt.figure(1);
 ax = fig.add_subplot(111,projection='3d');
-ax.scatter(r[0],r[1],r[2],marker='o',label='r',c='b');
+ax.scatter(x,y,z,marker='o',label='r',c='b');
 plt.show();
