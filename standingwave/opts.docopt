@@ -2,12 +2,13 @@ Run the standingwave simulation.
 
 Usage:
   standingwave [--help]
-  standingwave [--periods=T  --intensity=I --ET=ETphi --BT=BTphi --ES=ESphi --BS=BSphi]
+  standingwave [--periods=T  --intensity=I --timestep=TS --ET=ETphi --BT=BTphi --ES=ESphi --BS=BSphi]
 
 Options:
   --help            Print this help.
   --periods=T       Run for T periods; this is an integer, sorry.
   --intensity=I     Use an intensity of I in W/cm^2 instead of 1e18.
+  --timestep=TS     Use a timestep of TS.
   --ET=ET           Run with a time phase of ET*pi for the electric field.
   --BT=BT           Run with a time phase of BT*pi for the magnetic field.
   --ES=ES           Run with a time phase of ES*pi for the electric field.

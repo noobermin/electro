@@ -19,18 +19,19 @@ const double l = 8e-5;
 int
 main(int argc, char* argv[])
 {
-  const double timestep = 1e-21;
+
   unsigned int N;
-  double I,Et,Bt,Es,Bs;
+  double I,Et,Bt,Es,Bs,timestep;
   //reading in arguments
   DocoptArgs opts = docopt(argc,argv,true,"1.0");
   I = convert_arg(opts.intensity,"intensity",1e18)*1e7;
+  timestep = convert_arg(opts.timestep, "timestep",1e-19);
   N = convert_arg(opts.periods,"periods",1)*int(l/c/timestep);
   Et= convert_arg(opts.ET,"ET",1.0/2.0);
   Es= convert_arg(opts.ET,"ES",1.0/2.0);
   Bt= convert_arg(opts.BT,"BT",0.0);
   Bs= convert_arg(opts.BS,"BS",0.0);
-  
+
 
   double E_0 = sqrt(4*pi*I/c);
   //making fields lambda functions. The 2.0 is due to the standing wave forming
