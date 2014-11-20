@@ -2,6 +2,7 @@
 #include "noob3d/prim.hpp"
 #include <vector>
 #include <iostream>
+#define ELECTRO_USE_NATURAL
 #include "electro.hpp"
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -12,14 +13,14 @@ typedef scalar sc;
 //physical/mathematical constants
 using namespace noob3d::consts;
 const double pi = M_PI;
-const double m_e = 9.10938291e-28;
+const double qmr = 1.0;
+const double qmr = 1.0;
 //const double T =
 const double l = 8e-5;
 
 int
 main(int argc, char* argv[])
 {
-
   unsigned int N;
   double I,Et,Bt,Es,Bs,timestep;
   //reading in arguments
@@ -46,11 +47,7 @@ main(int argc, char* argv[])
     };
   //initializing simulation
   Electro electro(E,B,timestep);
-  //adding four starting points.
-  //electro.add(v3(0,0,0   ),v3(),-e/m_e);
-  //electro.add(v3(0,0,l/16),v3(),-e/m_e);
-  electro.add(v3(0,0,l*2/16),v3(),-e/m_e);
-  //electro.add(v3(0,0,3/16),v3(),-e/m_e);
+  electro.add(v3(0,0,l/8),v3(),-e/m_e);
   run_and_output(electro, N);
   return 0;
 }
