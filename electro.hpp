@@ -44,13 +44,12 @@ namespace noob3d {
 		       FieldFunc E, FieldFunc B)
   {
     using namespace consts;
-    scalar invgamma = squareRoot(1-(v/c).squareLength());
-    matrix3d V(sq(c)-sq(v.y)-sq(v.z), v.x*v.y,               v.x*v.z,
-	       v.y*v.x,               sq(c)-sq(v.x)-sq(v.z), v.y*v.z,
-	       v.x*v.z,               v.y*v.z,               sq(c)-sq(v.x)-sq(v.y));
-    V/=sq(c);
-    V=inverse(V);
-    V*=invgamma*invgamma*invgamma;
+    vector3d b = v/c;
+    scalar invgamma = squareRoot(1-b.squareLength());
+    matrix3d V(1-sq(b.x),  -b.x*b.y, -b.x*b.z,
+	       -b.y*b.x,  1-sq(b.y), -b.y*b.z,
+	       -b.x*b.z,   -b.y*b.z, 1-sq(b.z));
+    V*=invgamma;
     return V*lorentz(r,v,t,qmr,E,B);
   }
 
