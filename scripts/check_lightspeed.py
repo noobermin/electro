@@ -13,7 +13,7 @@ from docopt import docopt;
 import numpy as np;
 import cPickle;
 import fileinput;
-import itertools as itools;
+import itertools as it;
 import sys;
 
 opts=docopt(__doc__,help=True);
@@ -25,16 +25,18 @@ if opts['<infile>']:
 else:
     t,d = cPickle.loads(sys.stdin.read());
 
+v = np.sqrt(d[3,:,:]**2 + d[4,:,:]**2 +d[5,:,:]**2).T #makes the first index be particles
+del d;
 errmsg = "exceeded speed of light at time {} s of particle {} (speed is {}, v-c={})"
-
-for i,v in enumerate(d[1::2]):
-    v = np.array(v);
-    v_m = np.sqrt(v[0]**2+v[1]**2+v[2]**2);
+#iterate over particles
+for i,cv in enumerate(v):
     import matplotlib.pyplot as plt;
-    plt.hist(v_m,bins=100);
+    plt.hist(cv,bins=100);
     plt.show();
-    for cv_m,ct in itools.izip(v_m,t):
-        if cv_m > c:
-            print(errmsg.format(ct,i,cv_m,cv_m-c));
-        pass;
+    bad = cv > c;
+    bad_times = t[bad];
+    bad_speeds = cv[bad];
+    for bv,bt in it.izip(bad_speeds,bad_times):
+        print(errmsg.format(bt,i,bv,bv-c));
+    pass;
 pass;
