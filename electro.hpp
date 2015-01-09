@@ -14,11 +14,12 @@
 #include <thread>
 #include <functional>
 
-namespace noob3d {
+namespace electro {
+  using namespace noob3d;
   namespace consts
   {
 #ifdef ELECTRO_USE_NATURAL
-    const scalar c=1;
+    const scalar c=1.0;
     const scalar e=0.302822;
 #else
     const scalar c=2.99792458e10;
@@ -45,12 +46,10 @@ namespace noob3d {
   {
     using namespace consts;
     vector3d b = v/c;
-    scalar invgamma = squareRoot(1-b.squareLength());
     matrix3d V(1-sq(b.x),  -b.x*b.y, -b.x*b.z,
 	       -b.y*b.x,  1-sq(b.y), -b.y*b.z,
 	       -b.x*b.z,   -b.y*b.z, 1-sq(b.z));
-    V*=invgamma;
-    return V*lorentz(r,v,t,qmr,E,B);
+    return V*lorentz(r,v,t,qmr,E,B) * squareRoot(1-b.squareLength());
   }
 
   class Electro
@@ -62,6 +61,17 @@ namespace noob3d {
     FieldFunc E,B;
     void (Electro::*actual_step)(std::vector<scalar>&);
   protected:
+    template <typename T> void
+    out_step(std::vector<scalar>& out, T p)
+    {
+      out.push_back(p.r.x);
+      out.push_back(p.r.y);
+      out.push_back(p.r.z);
+      out.push_back(p.v.x);
+      out.push_back(p.v.y);
+      out.push_back(p.v.z);
+    }
+    
     void
     step_threaded(std::vector<scalar>& out)
     {
@@ -79,36 +89,25 @@ namespace noob3d {
 	  d.r=p.r;
 	  d.v=p.v;
 	};
+      //sort by i;
       for(int i=0; i!=ps.size(); ++i)
 	pool.push_back(std::thread(f, std::ref(ps[i]), std::ref(_out[i])));
       for(std::thread &t : pool)
 	if(t.joinable()) t.join();
       for (output_data d: _out)
-	{
-	  out.push_back(d.r.x);
-	  out.push_back(d.r.y);
-	  out.push_back(d.r.z);
-	  out.push_back(d.v.x);
-	  out.push_back(d.v.y);
-	  out.push_back(d.v.z);
-	}
+	out_step(out,d);
       return;
     }
     
     void
     step_linear(std::vector<scalar>& out)
     {
-      for(auto i = ps.begin(); i!=ps.end(); ++i)
+      for(particle &p : ps)
 	{
-	  integrate::leapfrog(i->r,i->v, t, dt,
-			      [i,this](vector3d r,vector3d v,scalar _t)
-			      {return relativistic_lorentz(i->r,i->v,_t,i->qmr,E,B);});
-	  out.push_back(i->r.x);
-	  out.push_back(i->r.y);
-	  out.push_back(i->r.z);
-	  out.push_back(i->v.x);
-	  out.push_back(i->v.y);
-	  out.push_back(i->v.z);
+	  integrate::leapfrog(p.r, p.v, t, dt,
+			      [p,this](vector3d r,vector3d v,scalar _t)
+			      {return relativistic_lorentz(p.r,p.v,_t,p.qmr,E,B);});
+	  out_step(out,p);
 	}
       return;
     }
@@ -141,17 +140,14 @@ namespace noob3d {
   inline
   void run_and_output(Electro& electro, int N)
   {
-    //why is this not a member function? Because I do not mean to not
-    //have Electro be inherited. Output code will change as my needs change
-    //and I prefer to deal with that by writing a new function, not inheritance.
-    //Why? Because I'm a generic man, not a OOP man. FFS, if anyone will ever 
-    //care about this childish sim they should add it themselves.
     for(int i=0;i<N; ++i)
     {
       std::vector<scalar> c = electro.step();
       std::cout << c[0] << ":";
-      for(auto j=c.begin()+1;j!=c.end();j+=3)
-	std::cout<< *j <<","<<*(j+1)<<","<<*(j+2)<<" ";
+      for(auto j=c.begin()+1;j!=c.end();j+=6)
+	std::cout << *j <<","<<*(j+1)<<","<<*(j+2)<<" "
+		  <<*(j+3) <<","<<*(j+4)<<","<<*(j+5)
+		  << ( j+6 != c.end() ? ";" : "");
       std::cout << std::endl;
     }
   }
